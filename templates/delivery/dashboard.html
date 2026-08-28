@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Delivery Dashboard{% endblock %}
+{% block content %}
+<div class="page-header-simple">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-header-title mb-1">
+                    <i class="bi bi-bicycle me-2"></i>Delivery Dashboard
+                </h1>
+                <p class="text-muted mb-0">Welcome, {{ current_user.name }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small">Availability:</span>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input availability-toggle" type="checkbox"
+                           id="availabilityToggle" {{ 'checked' if partner.is_available }}>
+                    <label class="form-check-label fw-semibold
+                                  {{ 'text-success' if partner.is_available else 'text-danger' }}"
+                           id="availabilityLabel">
+                        {{ 'Available' if partner.is_available else 'Unavailable' }}
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-primary"><i class="bi bi-bag-check"></i></div>
+                <div class="stat-num">{{ completed_today }}</div>
+                <div class="stat-label">Delivered Today</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-success"><i class="bi bi-star-fill"></i></div>
+                <div class="stat-num">{{ "%.1f"|format(partner.rating) }}</div>
+                <div class="stat-label">Rating</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon text-info"><i class="bi bi-bicycle"></i></div>
+                <div class="stat-num">{{ partner.total_deliveries }}</div>
+                <div class="stat-label">Total Deliveries</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon {{ 'text-success' if partner.is_available else 'text-danger' }}">
+                    <i class="bi bi-circle-fill"></i>
+                </div>
+                <div class="stat-num">{{ 'Online' if partner.is_available else 'Offline' }}</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Active Orders -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-arrow-repeat text-warning me-2"></i>My Active Deliveries
+                        <span class="badge bg-warning ms-2">{{ my_active|length }}</span>
+                    </h5>
+                    {% if my_active %}
+                        {% for assignment in my_active %}
+                        <div class="delivery-order-card mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="fw-bold mb-0">
+                                    #{{ assignment.order.order_number }}
+                                </h6>
+                                {% set label, icon, color = assignment.order.get_status_info() %}
+                                <span class="badge bg-{{ color }}">{{ label }}</span>
+                            </div>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-shop me-1"></i>{{ assignment.order.restaurant.name }}
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>{{ assignment.order.delivery_address }}
+                            </p>
+                            <p class="small mb-3">
+                                <i class="bi bi-person me-1"></i>{{ assignment.order.delivery_name }}
+                                &nbsp;·&nbsp; <i class="bi bi-telephone me-1"></i>{{ assignment.order.delivery_phone }}
+                            </p>
+                            <form method="POST" action="{{ url_for('delivery.update_status', order_id=assignment.order.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="d-flex gap-2">
+                                    {% if assignment.order.status == 'preparing' %}
+                                    <button name="status" value="out_for_delivery" class="btn btn-sm btn-primary w-100">
+                                        <i class="bi bi-bicycle me-1"></i>Mark Picked Up
+                                    </button>
+                                    {% elif assignment.order.status == 'out_for_delivery' %}
+                                    <button name="status" value="delivered" class="btn btn-sm btn-success w-100">
+                                        <i class="bi bi-bag-check me-1"></i>Mark Delivered
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state text-center py-3">
+                        <div class="empty-state-icon">🛵</div>
+                        <p class="text-muted">No active deliveries</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Orders -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-bell text-primary me-2"></i>Available Orders
+                        <span class="badge bg-primary ms-2">{{ available_orders|length }}</span>
+                    </h5>
+                    {% if available_orders %}
+                        {% for order in available_orders %}
+                        <div class="delivery-order-card mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="fw-bold mb-0">#{{ order.order_number }}</h6>
+                                <span class="text-primary fw-bold">₹{{ order.total_amount|int }}</span>
+                            </div>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-shop me-1"></i>{{ order.restaurant.name }}
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>{{ order.delivery_address }}
+                            </p>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-clock me-1"></i>
+                                {{ order.placed_at.strftime('%I:%M %p') }}
+                                &nbsp;·&nbsp; {{ order.items.count() }} item(s)
+                            </p>
+                            {% if partner.is_available %}
+                            <form method="POST" action="{{ url_for('delivery.accept_order', order_id=order.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-success w-100">
+                                    <i class="bi bi-check-circle me-1"></i>Accept Order
+                                </button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-sm btn-secondary w-100" disabled>Go Online to Accept</button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state text-center py-3">
+                        <div class="empty-state-icon">✅</div>
+                        <p class="text-muted">No orders available right now</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('availabilityToggle').addEventListener('change', function() {
+    fetch('{{ url_for("delivery.toggle_availability") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()}
+    })
+    .then(r => r.json())
+    .then(data => {
+        const label = document.getElementById('availabilityLabel');
+        label.textContent = data.available ? 'Available' : 'Unavailable';
+        label.className = `form-check-label fw-semibold ${data.available ? 'text-success' : 'text-danger'}`;
+        showToast(data.message, data.available ? 'success' : 'warning');
+    });
+});
+// Auto-refresh every 30s
+setTimeout(() => location.reload(), 30000);
+</script>
+{% endblock %}
