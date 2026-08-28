@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Order History{% endblock %}
+{% block content %}
+<div class="page-header-simple">
+    <div class="container">
+        <h1 class="page-header-title"><i class="bi bi-clock-history me-2"></i>Order History</h1>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if orders.items %}
+    <div class="row g-4">
+        {% for order in orders.items %}
+        <div class="col-12">
+            <div class="history-order-card">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-3">
+                        <div class="fw-bold">{{ order.restaurant.name }}</div>
+                        <div class="text-muted small">#{{ order.order_number }}</div>
+                        <div class="text-muted small">{{ order.placed_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="history-items-preview">
+                            {% for item in order.items.limit(3) %}
+                            <span class="history-item-tag">{{ item.menu_item.name }} ×{{ item.quantity }}</span>
+                            {% endfor %}
+                            {% if order.items.count() > 3 %}
+                            <span class="text-muted small">+{{ order.items.count() - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-1 small">
+                            <strong>₹{{ order.total_amount|int }}</strong>
+                            &nbsp;·&nbsp;
+                            {{ 'COD' if order.payment_method == 'cod' else 'Online' }}
+                            {% if order.payment_status == 'paid' %}
+                            <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        {% set label, icon, color = order.get_status_info() %}
+                        <span class="badge bg-{{ color }}-subtle text-{{ color }} px-3 py-2">
+                            <i class="bi {{ icon }} me-1"></i>{{ label }}
+                        </span>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                            {% if order.status not in ['delivered', 'cancelled'] %}
+                            <a href="{{ url_for('orders.tracking', order_id=order.id) }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-geo-alt me-1"></i>Track
+                            </a>
+                            {% endif %}
+                            {% if order.status == 'delivered' and not order.review %}
+                            <a href="{{ url_for('orders.add_review', order_id=order.id) }}"
+                               class="btn btn-sm btn-warning">
+                                <i class="bi bi-star me-1"></i>Review
+                            </a>
+                            {% endif %}
+                            {% if order.status == 'delivered' %}
+                            <a href="{{ url_for('restaurants.detail', restaurant_id=order.restaurant_id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                Reorder
+                            </a>
+                            {% endif %}
+                            {% if order.status in ['placed', 'confirmed'] %}
+                            <form method="POST" action="{{ url_for('orders.cancel_order', order_id=order.id) }}"
+                                  onsubmit="return confirm('Cancel this order?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if orders.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('orders.history', page=orders.prev_num) }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            {% for page_num in orders.iter_pages() %}
+                {% if page_num %}
+                <li class="page-item {{ 'active' if page_num == orders.page }}">
+                    <a class="page-link" href="{{ url_for('orders.history', page=page_num) }}">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if orders.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('orders.history', page=orders.next_num) }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state text-center py-5">
+        <div class="empty-state-icon">📦</div>
+        <h4>No orders yet</h4>
+        <p class="text-muted">Your order history will appear here.</p>
+        <a href="{{ url_for('restaurants.list_restaurants') }}" class="btn btn-primary mt-2">
+            <i class="bi bi-shop me-2"></i>Start Ordering
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
