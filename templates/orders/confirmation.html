@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Order Confirmed!{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <!-- Success Animation -->
+            <div class="confirmation-hero text-center mb-5">
+                <div class="confirmation-animation">
+                    <div class="check-circle">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mt-4">Order Placed Successfully! 🎉</h2>
+                <p class="text-muted">
+                    Your order <strong>#{{ order.order_number }}</strong> has been received by
+                    <strong>{{ order.restaurant.name }}</strong>.
+                </p>
+            </div>
+
+            <!-- Order Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="confirm-detail-label">Order Number</div>
+                            <div class="confirm-detail-value fw-bold text-primary">#{{ order.order_number }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="confirm-detail-label">Status</div>
+                            {% set label, icon, color = order.get_status_info() %}
+                            <span class="badge bg-{{ color }}">{{ label }}</span>
+                        </div>
+                        <div class="col-6">
+                            <div class="confirm-detail-label">Payment</div>
+                            <div class="confirm-detail-value">
+                                {{ 'Cash on Delivery' if order.payment_method == 'cod' else 'Paid Online' }}
+                                {% if order.payment_status == 'paid' %}
+                                <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="confirm-detail-label">Estimated Delivery</div>
+                            <div class="confirm-detail-value fw-semibold">
+                                <i class="bi bi-clock me-1 text-primary"></i>
+                                {{ order.estimated_delivery_time }} minutes
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Items -->
+                    <h6 class="fw-bold mb-3">Items Ordered</h6>
+                    {% for item in order.items %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ item.menu_item.name }} <span class="text-muted">x{{ item.quantity }}</span></span>
+                        <span>₹{{ item.subtotal|int }}</span>
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="d-flex justify-content-between text-muted mb-1">
+                        <span>Subtotal</span><span>₹{{ order.subtotal|int }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted mb-1">
+                        <span>Delivery Fee</span><span>₹{{ order.delivery_fee|int }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted mb-3">
+                        <span>Tax</span><span>₹{{ order.tax|int }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total Paid</span>
+                        <span class="text-primary">₹{{ order.total_amount|int }}</span>
+                    </div>
+
+                    <hr>
+                    <!-- Delivery Address -->
+                    <h6 class="fw-bold mb-2">Delivery Address</h6>
+                    <p class="text-muted mb-0">
+                        <strong>{{ order.delivery_name }}</strong><br>
+                        {{ order.delivery_address }}<br>
+                        📞 {{ order.delivery_phone }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{{ url_for('orders.tracking', order_id=order.id) }}"
+                   class="btn btn-primary btn-lg px-4" id="trackOrderBtn">
+                    <i class="bi bi-geo-alt me-2"></i>Track Order
+                </a>
+                <a href="{{ url_for('restaurants.list_restaurants') }}"
+                   class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-shop me-2"></i>Order More
+                </a>
+                <a href="{{ url_for('orders.history') }}"
+                   class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-clock-history me-2"></i>Order History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_css %}
+<style>
+.confirmation-animation { display: flex; justify-content: center; }
+.check-circle {
+    width: 100px; height: 100px; background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: white; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.confirm-detail-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.confirm-detail-value { font-size: 0.95rem; }
+</style>
+{% endblock %}
