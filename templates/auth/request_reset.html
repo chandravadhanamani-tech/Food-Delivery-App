@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Reset Password{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-80">
+            <div class="col-md-5">
+                <div class="auth-card">
+                    <div class="auth-card-header text-center">
+                        <div class="auth-logo">🔒</div>
+                        <h2 class="auth-title">Forgot Password?</h2>
+                        <p class="auth-subtitle">Enter your email and we'll send a reset link</p>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="POST" action="{{ url_for('auth.request_reset') }}" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                {{ form.email(class="form-control form-control-lg" + (" is-invalid" if form.email.errors else ""), placeholder="you@example.com", id="resetEmail") }}
+                                {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                            </div>
+                            {{ form.submit(class="btn btn-primary btn-lg w-100 fw-semibold", id="resetBtn") }}
+                        </form>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('auth.login') }}" class="text-muted small">
+                                <i class="bi bi-arrow-left me-1"></i>Back to Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
