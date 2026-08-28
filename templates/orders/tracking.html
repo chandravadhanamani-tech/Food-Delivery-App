@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Track Order #{{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="page-header-simple">
+    <div class="container">
+        <h1 class="page-header-title">Track Your Order</h1>
+        <p class="text-muted">Order #{{ order.order_number }} from {{ order.restaurant.name }}</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-8">
+            <!-- Status Banner -->
+            <div class="tracking-status-banner mb-4" id="statusBanner">
+                {% set label, icon, color = order.get_status_info() %}
+                <div class="tracking-status-icon text-{{ color }}">
+                    <i class="bi {{ icon }}"></i>
+                </div>
+                <div>
+                    <div class="tracking-status-label" id="statusLabel">{{ label }}</div>
+                    <div class="text-muted small" id="statusSub">
+                        {% if order.status == 'placed' %}Your order is waiting for confirmation
+                        {% elif order.status == 'confirmed' %}Restaurant has confirmed your order
+                        {% elif order.status == 'preparing' %}The kitchen is preparing your food 🔥
+                        {% elif order.status == 'out_for_delivery' %}Your order is on the way! 🛵
+                        {% elif order.status == 'delivered' %}Enjoy your meal! 😋
+                        {% elif order.status == 'cancelled' %}Order was cancelled
+                        {% endif %}
+                    </div>
+                </div>
+                {% if order.status not in ['delivered', 'cancelled'] %}
+                <div class="ms-auto">
+                    <div class="spinner-border spinner-border-sm text-primary" id="trackingSpinner"></div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Timeline -->
+            <div class="tracking-timeline mb-4" id="trackingTimeline">
+                {% for step in order.status_timeline() %}
+                <div class="timeline-step {{ step.state }}" id="step-{{ step.status }}">
+                    <div class="timeline-icon">
+                        <i class="bi {{ step.icon }}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">{{ step.label }}</div>
+                        {% if step.state == 'completed' %}
+                        <div class="timeline-time text-success small"><i class="bi bi-check2 me-1"></i>Done</div>
+                        {% elif step.state == 'active' %}
+                        <div class="timeline-time text-primary small">In progress...</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Order & Delivery Info -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-bag me-2 text-primary"></i>Order Details</h6>
+                            {% for item in order.items %}
+                            <div class="d-flex justify-content-between mb-1 small">
+                                <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+                                <span>₹{{ item.subtotal|int }}</span>
+                            </div>
+                            {% endfor %}
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total</span>
+                                <span class="text-primary">₹{{ order.total_amount|int }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-geo-alt me-2 text-primary"></i>Delivery Details
+                            </h6>
+                            <p class="mb-1 fw-semibold small">{{ order.delivery_name }}</p>
+                            <p class="text-muted small mb-2">{{ order.delivery_address }}</p>
+                            <p class="small mb-3"><i class="bi bi-telephone me-1"></i>{{ order.delivery_phone }}</p>
+
+                            {% if order.delivery_assignment %}
+                            <hr>
+                            <h6 class="fw-semibold small mb-2">🛵 Delivery Partner</h6>
+                            <p class="mb-0 small" id="partnerInfo">
+                                {{ order.delivery_assignment.partner.user.name }}
+                            </p>
+                            {% endif %}
+
+                            <div class="mt-3">
+                                <i class="bi bi-clock me-1 text-primary"></i>
+                                <small class="text-muted">Est. {{ order.estimated_delivery_time }} min from order</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3 flex-wrap">
+                {% if order.status in ['placed', 'confirmed'] %}
+                <form method="POST" action="{{ url_for('orders.cancel_order', order_id=order.id) }}"
+                      onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-danger" id="cancelOrderBtn">
+                        <i class="bi bi-x-circle me-2"></i>Cancel Order
+                    </button>
+                </form>
+                {% endif %}
+                {% if order.status == 'delivered' and not order.review %}
+                <a href="{{ url_for('orders.add_review', order_id=order.id) }}" class="btn btn-warning" id="addReviewBtn">
+                    <i class="bi bi-star me-2"></i>Rate Your Order
+                </a>
+                {% endif %}
+                <a href="{{ url_for('orders.history') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>My Orders
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/order-tracking.js') }}"></script>
+<script>
+{% if order.status not in ['delivered', 'cancelled'] %}
+startTracking({{ order.id }}, '{{ order.status }}');
+{% endif %}
+</script>
+{% endblock %}
