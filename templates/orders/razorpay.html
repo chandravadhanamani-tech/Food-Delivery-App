@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Complete Payment{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-0 shadow-sm p-4">
+                <h4 class="fw-bold mb-2">Complete Your Payment</h4>
+                <p class="text-muted mb-1">Order #{{ order.order_number }}</p>
+                <p class="text-muted mb-4">Amount: <strong class="text-primary fs-5">₹{{ order.total_amount|int }}</strong></p>
+                <button id="rzp-button" class="btn btn-primary btn-lg px-5 fw-semibold">
+                    <i class="bi bi-credit-card me-2"></i>Pay ₹{{ order.total_amount|int }}
+                </button>
+                <p class="text-muted small mt-3">Secured by <strong>Razorpay</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount }}",
+    "currency": "INR",
+    "name": "FoodApp",
+    "description": "Order #{{ order.order_number }}",
+    "order_id": "{{ razorpay_order_id }}",
+    "handler": function(response) {
+        fetch('{{ url_for("orders.razorpay_verify") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
+            body: JSON.stringify({
+                order_db_id: {{ order.id }},
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) window.location.href = data.redirect;
+            else alert('Payment verification failed. Contact support.');
+        });
+    },
+    "prefill": {
+        "name": "{{ order.delivery_name }}",
+        "contact": "{{ order.delivery_phone }}"
+    },
+    "theme": { "color": "#FF6B6B" }
+};
+var rzp = new Razorpay(options);
+document.getElementById('rzp-button').onclick = function(e) { rzp.open(); e.preventDefault(); };
+window.onload = function() { rzp.open(); };
+</script>
+{% endblock %}
