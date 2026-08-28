@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-80">
+            <div class="col-md-6">
+                <div class="auth-card">
+                    <div class="auth-card-header text-center">
+                        <div class="auth-logo">🍔</div>
+                        <h2 class="auth-title">Create Account</h2>
+                        <p class="auth-subtitle">Join thousands of food lovers!</p>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.name.label.text }}</label>
+                                {{ form.name(class="form-control form-control-lg" + (" is-invalid" if form.name.errors else ""), placeholder="John Doe", id="regName") }}
+                                {% for e in form.name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.email.label.text }}</label>
+                                {{ form.email(class="form-control form-control-lg" + (" is-invalid" if form.email.errors else ""), placeholder="you@example.com", id="regEmail") }}
+                                {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.phone.label.text }}</label>
+                                {{ form.phone(class="form-control form-control-lg" + (" is-invalid" if form.phone.errors else ""), placeholder="+91 98765 43210", id="regPhone") }}
+                                {% for e in form.phone.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-semibold">{{ form.password.label.text }}</label>
+                                    {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="Min 8 chars", id="regPassword") }}
+                                    {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-semibold">{{ form.confirm_password.label.text }}</label>
+                                    {{ form.confirm_password(class="form-control form-control-lg" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password", id="regConfirm") }}
+                                    {% for e in form.confirm_password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                                </div>
+                            </div>
+                            <!-- Password strength -->
+                            <div class="mb-3">
+                                <div class="password-strength-bar">
+                                    <div class="password-strength-fill" id="strengthFill"></div>
+                                </div>
+                                <small class="text-muted" id="strengthLabel">Enter a password</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold" id="registerBtn">
+                                <i class="bi bi-person-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+                        <div class="auth-divider"><span>or</span></div>
+                        <div class="text-center">
+                            <p class="mb-0">Already have an account?
+                                <a href="{{ url_for('auth.login') }}" class="text-primary fw-semibold">Sign in</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('regPassword').addEventListener('input', function() {
+    const pw = this.value;
+    const fill = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const levels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+    fill.style.width = (score * 25) + '%';
+    fill.style.backgroundColor = colors[score] || '#e5e7eb';
+    label.textContent = pw.length === 0 ? 'Enter a password' : `Strength: ${levels[score] || 'Very Weak'}`;
+});
+</script>
+{% endblock %}
