@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Rate Your Order{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="fs-1 mb-2">⭐</div>
+                        <h4 class="fw-bold">Rate Your Experience</h4>
+                        <p class="text-muted">{{ order.restaurant.name }} · #{{ order.order_number }}</p>
+                    </div>
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        <!-- Overall Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Overall Rating</label>
+                            <div class="star-rating-input" id="overallRating">
+                                {% for i in range(1, 6) %}
+                                <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}">
+                                <label for="star{{ i }}" class="star-label">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            {% for e in form.rating.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        <!-- Food Rating -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Food Quality</label>
+                            <div class="star-rating-input" id="foodRating">
+                                {% for i in range(1, 6) %}
+                                <input type="radio" name="food_rating" id="food{{ i }}" value="{{ i }}">
+                                <label for="food{{ i }}" class="star-label">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Delivery Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Delivery Experience</label>
+                            <div class="star-rating-input" id="deliveryRating">
+                                {% for i in range(1, 6) %}
+                                <input type="radio" name="delivery_rating" id="del{{ i }}" value="{{ i }}">
+                                <label for="del{{ i }}" class="star-label">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Share Your Experience</label>
+                            {{ form.comment(class="form-control", rows="4",
+                               placeholder="Tell others about the food quality, delivery speed, etc...", id="reviewComment") }}
+                        </div>
+                        {{ form.submit(class="btn btn-warning btn-lg w-100 fw-semibold", id="submitReviewBtn") }}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
