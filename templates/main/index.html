@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- ======= HERO SECTION ======= -->
+<section class="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <div class="hero-badge mb-3">
+                    <i class="bi bi-lightning-fill me-1"></i> Fast Delivery in 30 mins
+                </div>
+                <h1 class="hero-title">
+                    Order Food from
+                    <span class="gradient-text">Your Favourite</span>
+                    Restaurants
+                </h1>
+                <p class="hero-subtitle">
+                    Discover the best food and drinks in your city. Real-time tracking,
+                    easy payment, and delivered hot to your door! 🔥
+                </p>
+
+                <!-- Hero Search -->
+                <form class="hero-search-form" action="{{ url_for('main.search') }}" method="GET">
+                    <div class="hero-search-box">
+                        <i class="bi bi-search hero-search-icon"></i>
+                        <input type="text" name="q" placeholder="Search for restaurants, cuisines...">
+                        <button type="submit" class="btn btn-primary px-4">Search</button>
+                    </div>
+                </form>
+
+                <!-- Stats -->
+                <div class="hero-stats mt-4">
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">500+</span>
+                        <span class="hero-stat-label">Restaurants</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">50K+</span>
+                        <span class="hero-stat-label">Happy Customers</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">4.8★</span>
+                        <span class="hero-stat-label">Average Rating</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+                <div class="hero-illustration">
+                    <div class="food-card-float card-1">🍕</div>
+                    <div class="food-card-float card-2">🍔</div>
+                    <div class="food-card-float card-3">🍜</div>
+                    <div class="food-card-float card-4">🍣</div>
+                    <div class="hero-circle">
+                        <span class="hero-circle-emoji">🛵</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======= CATEGORIES ======= -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-badge">Browse by Category</span>
+            <h2 class="section-title">What's on your mind?</h2>
+        </div>
+        <div class="row g-3 justify-content-center">
+            {% for category in categories %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ url_for('restaurants.list_restaurants', category=category.id) }}"
+                   class="category-card text-center text-decoration-none">
+                    <div class="category-icon">{{ category.icon or '🍽️' }}</div>
+                    <div class="category-name">{{ category.name }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ======= FEATURED RESTAURANTS ======= -->
+{% if featured %}
+<section class="section-padding bg-light-custom">
+    <div class="container">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="section-badge">⭐ Editor's Choice</span>
+                <h2 class="section-title mb-0">Featured Restaurants</h2>
+            </div>
+            <a href="{{ url_for('restaurants.list_restaurants') }}" class="btn btn-outline-primary">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            {% for restaurant in featured %}
+            <div class="col-md-6 col-lg-4">
+                {% include 'partials/restaurant_card.html' %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ======= HOW IT WORKS ======= -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-badge">Simple & Easy</span>
+            <h2 class="section-title">How FoodApp Works</h2>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="how-it-works-card">
+                    <div class="how-it-works-icon">🔍</div>
+                    <div class="how-it-works-step">01</div>
+                    <h5>Choose Restaurant</h5>
+                    <p class="text-muted small">Browse hundreds of restaurants and cuisines near you</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="how-it-works-card">
+                    <div class="how-it-works-icon">🛒</div>
+                    <div class="how-it-works-step">02</div>
+                    <h5>Select Your Meal</h5>
+                    <p class="text-muted small">Pick your favourite items from the menu</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="how-it-works-card">
+                    <div class="how-it-works-icon">💳</div>
+                    <div class="how-it-works-step">03</div>
+                    <h5>Easy Payment</h5>
+                    <p class="text-muted small">Pay securely with Razorpay or Cash on Delivery</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="how-it-works-card">
+                    <div class="how-it-works-icon">🚀</div>
+                    <div class="how-it-works-step">04</div>
+                    <h5>Fast Delivery</h5>
+                    <p class="text-muted small">Track your order in real-time, delivered hot!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======= TOP RATED ======= -->
+{% if top_rated %}
+<section class="section-padding bg-light-custom">
+    <div class="container">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="section-badge">🔥 Trending Now</span>
+                <h2 class="section-title mb-0">Top Rated Near You</h2>
+            </div>
+            <a href="{{ url_for('restaurants.list_restaurants', sort='rating') }}" class="btn btn-outline-primary">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            {% for restaurant in top_rated %}
+            <div class="col-md-6 col-lg-3">
+                {% include 'partials/restaurant_card.html' %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ======= APP DOWNLOAD BANNER ======= -->
+<section class="app-banner section-padding">
+    <div class="container">
+        <div class="app-banner-inner">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <h2 class="text-white fw-bold mb-3">Get the FoodApp Experience</h2>
+                    <p class="text-white-50 mb-4">
+                        Order food, track delivery, and manage your account. All features available right here in your browser — no app download needed!
+                    </p>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg fw-semibold px-4">
+                        Get Started Free <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+                <div class="col-lg-5 text-end d-none d-lg-block">
+                    <div class="app-banner-emoji">🍔🍕🍜🍣</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
