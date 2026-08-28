@@ -1,0 +1,56 @@
+{% extends "admin/master.html" %}
+{% block body %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">📊 Dashboard</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-primary">{{ stats.total_users }}</div>
+                    <div class="text-muted small">Total Users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-success">{{ stats.total_restaurants }}</div>
+                    <div class="text-muted small">Restaurants</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-info">{{ stats.total_orders }}</div>
+                    <div class="text-muted small">Total Orders</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-warning">{{ stats.orders_today }}</div>
+                    <div class="text-muted small">Orders Today</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-success">₹{{ stats.revenue_today|int }}</div>
+                    <div class="text-muted small">Revenue Today</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="fs-2 text-danger">{{ stats.active_deliveries }}</div>
+                    <div class="text-muted small">Out for Delivery</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
