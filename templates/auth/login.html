@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-80">
+            <div class="col-md-5">
+                <div class="auth-card">
+                    <div class="auth-card-header text-center">
+                        <div class="auth-logo">🍔</div>
+                        <h2 class="auth-title">Welcome Back!</h2>
+                        <p class="auth-subtitle">Sign in to continue ordering</p>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.email.label.text }}</label>
+                                {{ form.email(class="form-control form-control-lg" + (" is-invalid" if form.email.errors else ""), placeholder="you@example.com", id="loginEmail") }}
+                                {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label fw-semibold">{{ form.password.label.text }}</label>
+                                    <a href="{{ url_for('auth.request_reset') }}" class="small text-primary">Forgot password?</a>
+                                </div>
+                                <div class="input-group">
+                                    {{ form.password(class="form-control form-control-lg border-end-0" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••", id="loginPassword") }}
+                                    <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword">
+                                        <i class="bi bi-eye" id="eyeIcon"></i>
+                                    </button>
+                                    {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.remember_me(class="form-check-input", id="rememberMe") }}
+                                    <label class="form-check-label" for="rememberMe">Remember me for 30 days</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold" id="loginBtn">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </form>
+                        <div class="auth-divider"><span>or</span></div>
+                        <div class="text-center">
+                            <p class="mb-0">Don't have an account?
+                                <a href="{{ url_for('auth.register') }}" class="text-primary fw-semibold">Create one free</a>
+                            </p>
+                        </div>
+                        <!-- Demo credentials -->
+                        <div class="demo-creds mt-3">
+                            <div class="demo-creds-title">🔑 Demo Credentials</div>
+                            <div class="demo-creds-row">
+                                <span>Customer:</span>
+                                <code>demo@foodapp.com / Demo@123</code>
+                            </div>
+                            <div class="demo-creds-row">
+                                <span>Admin:</span>
+                                <code>admin@foodapp.com / Admin@123</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const pw = document.getElementById('loginPassword');
+    const icon = document.getElementById('eyeIcon');
+    if (pw.type === 'password') { pw.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { pw.type = 'password'; icon.className = 'bi bi-eye'; }
+});
+</script>
+{% endblock %}
