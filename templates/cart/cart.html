@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}My Cart{% endblock %}
+{% block content %}
+<div class="page-header-simple">
+    <div class="container">
+        <h1 class="page-header-title"><i class="bi bi-bag me-2"></i>My Cart</h1>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if items %}
+    <div class="row g-4">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            {% if restaurant %}
+            <div class="cart-restaurant-header mb-3">
+                <i class="bi bi-shop me-2 text-primary"></i>
+                <strong>{{ restaurant.name }}</strong>
+                <span class="text-muted ms-2 small">· {{ restaurant.cuisine_type }}</span>
+                <form method="POST" action="{{ url_for('cart.clear_cart') }}" class="d-inline ms-3">
+                    <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Clear your entire cart?')" id="clearCartBtn">
+                        <i class="bi bi-trash me-1"></i>Clear Cart
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <div class="cart-items-list">
+                {% for item in items %}
+                <div class="cart-item-row" id="cart-row-{{ item.id }}">
+                    <div class="d-flex gap-3 align-items-center">
+                        {% if item.menu_item.image_url %}
+                        <img src="{{ item.menu_item.image_url }}" alt="{{ item.menu_item.name }}" class="cart-item-img">
+                        {% else %}
+                        <div class="cart-item-img-placeholder">🍽️</div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="veg-indicator {{ 'veg' if item.menu_item.is_veg else 'non-veg' }}"></span>
+                                <h6 class="mb-0 fw-semibold">{{ item.menu_item.name }}</h6>
+                            </div>
+                            <p class="text-muted small mb-2">{{ item.menu_item.restaurant.name }}</p>
+                            <div class="cart-qty-control">
+                                <button class="qty-btn" onclick="cartUpdateQty('{{ item.id }}', {{ item.qty - 1 }})" id="dec-{{ item.id }}">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <span class="qty-num" id="qty-{{ item.id }}">{{ item.qty }}</span>
+                                <button class="qty-btn" onclick="cartUpdateQty('{{ item.id }}', {{ item.qty + 1 }})" id="inc-{{ item.id }}">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="cart-item-price fw-bold">₹{{ item.subtotal|int }}</div>
+                            <div class="text-muted small">₹{{ item.price|int }} each</div>
+                            <form method="POST" action="{{ url_for('cart.remove_from_cart', item_id=item.id) }}" class="mt-2">
+                                <button class="btn btn-xs btn-outline-danger" title="Remove">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Special instructions -->
+            <div class="cart-notes mt-3">
+                <label class="form-label fw-semibold"><i class="bi bi-pencil me-2"></i>Special Instructions</label>
+                <textarea class="form-control" rows="2" placeholder="Any special requests for the restaurant..."></textarea>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary-card">
+                <h5 class="fw-bold mb-4">Order Summary</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Subtotal</span>
+                    <span>₹{{ summary.subtotal }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Delivery Fee</span>
+                    <span>₹{{ summary.delivery_fee|int }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Tax (5%)</span>
+                    <span>₹{{ summary.tax }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <span>Total</span>
+                    <span class="text-primary">₹{{ summary.total }}</span>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('orders.checkout') }}" class="btn btn-primary btn-lg w-100 fw-semibold" id="checkoutBtn">
+                    <i class="bi bi-lock me-2"></i>Proceed to Checkout
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login', next=url_for('orders.checkout')) }}"
+                   class="btn btn-primary btn-lg w-100 fw-semibold">
+                    <i class="bi bi-person me-2"></i>Login to Checkout
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('restaurants.list_restaurants') }}" class="btn btn-outline-secondary w-100 mt-2">
+                    <i class="bi bi-arrow-left me-2"></i>Add More Items
+                </a>
+
+                <div class="cart-trust-badges mt-4">
+                    <div class="trust-badge"><i class="bi bi-shield-check text-success"></i> Secure Checkout</div>
+                    <div class="trust-badge"><i class="bi bi-clock text-primary"></i> Fast Delivery</div>
+                    <div class="trust-badge"><i class="bi bi-star text-warning"></i> Top Rated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-cart text-center py-5">
+        <div class="empty-cart-icon">🛒</div>
+        <h3 class="mt-3 fw-bold">Your cart is empty</h3>
+        <p class="text-muted">Looks like you haven't added any items yet.</p>
+        <a href="{{ url_for('restaurants.list_restaurants') }}" class="btn btn-primary btn-lg px-5 mt-2" id="browseRestaurantsBtn">
+            <i class="bi bi-shop me-2"></i>Browse Restaurants
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function cartUpdateQty(itemId, newQty) {
+    if (newQty < 1) {
+        if (!confirm('Remove this item from cart?')) return;
+    }
+    fetch('/cart/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
+        body: JSON.stringify({item_id: itemId, qty: newQty})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            updateCartBadge(data.cart_count);
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}
